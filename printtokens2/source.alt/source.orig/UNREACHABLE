@@ -1,0 +1,9 @@
+
+In get_token, edges 61, 63, 79, 81 all follow on
+  unget_char returning EOF, which it does only if its
+  call to ungetc fails; don't know how to make ungetc
+  fail on these branches.
+
+  Edge 51 follows on unget_char not returning EOF in
+  a case where it necessarilty returns EOF (from trying
+  to ungetc EOF), so it can't be exercised.

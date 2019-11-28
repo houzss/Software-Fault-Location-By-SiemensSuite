@@ -1,0 +1,3 @@
+This directory contains original versions of fault inserted variants of the replace object.
+To locate the inserted fault use a file differencing application, e.g. diff(1), to compare
+the version to the unfaulted version, located in ${experiment_root}/replace/source.alt/source.orig

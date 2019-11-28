@@ -1,0 +1,9 @@
+
+Edge 12 in gser, and eges 6 and 15 in gcf, are not reached
+and, I think, not dynamically reachable.
+
+In InfoTbl, edges 11,13,14 and 17,19,20 can only be
+reached if there are malloc errors; a condition we
+aren't trying to simulate.  So these edges are
+effectively not dynamically reachable.
+

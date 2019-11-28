@@ -1,0 +1,974 @@
+        -:    0:Source:/usr/include/stdlib.h
+        -:    0:Graph:tcas.gcno
+        -:    0:Data:tcas.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:/* Copyright (C) 1991-2016 Free Software Foundation, Inc.
+        -:    2:   This file is part of the GNU C Library.
+        -:    3:
+        -:    4:   The GNU C Library is free software; you can redistribute it and/or
+        -:    5:   modify it under the terms of the GNU Lesser General Public
+        -:    6:   License as published by the Free Software Foundation; either
+        -:    7:   version 2.1 of the License, or (at your option) any later version.
+        -:    8:
+        -:    9:   The GNU C Library is distributed in the hope that it will be useful,
+        -:   10:   but WITHOUT ANY WARRANTY; without even the implied warranty of
+        -:   11:   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+        -:   12:   Lesser General Public License for more details.
+        -:   13:
+        -:   14:   You should have received a copy of the GNU Lesser General Public
+        -:   15:   License along with the GNU C Library; if not, see
+        -:   16:   <http://www.gnu.org/licenses/>.  */
+        -:   17:
+        -:   18:/*
+        -:   19: *	ISO C99 Standard: 7.20 General utilities	<stdlib.h>
+        -:   20: */
+        -:   21:
+        -:   22:#ifndef	_STDLIB_H
+        -:   23:
+        -:   24:#include <features.h>
+        -:   25:
+        -:   26:/* Get size_t, wchar_t and NULL from <stddef.h>.  */
+        -:   27:#define		__need_size_t
+        -:   28:#ifndef __need_malloc_and_calloc
+        -:   29:# define	__need_wchar_t
+        -:   30:# define	__need_NULL
+        -:   31:#endif
+        -:   32:#include <stddef.h>
+        -:   33:
+        -:   34:__BEGIN_DECLS
+        -:   35:
+        -:   36:#ifndef __need_malloc_and_calloc
+        -:   37:#define	_STDLIB_H	1
+        -:   38:
+        -:   39:#if (defined __USE_XOPEN || defined __USE_XOPEN2K8) && !defined _SYS_WAIT_H
+        -:   40:/* XPG requires a few symbols from <sys/wait.h> being defined.  */
+        -:   41:# include <bits/waitflags.h>
+        -:   42:# include <bits/waitstatus.h>
+        -:   43:
+        -:   44:# ifdef __USE_MISC
+        -:   45:
+        -:   46:/* Lots of hair to allow traditional BSD use of `union wait'
+        -:   47:   as well as POSIX.1 use of `int' for the status word.  */
+        -:   48:
+        -:   49:#  if defined __GNUC__ && !defined __cplusplus
+        -:   50:#   define __WAIT_INT(status) \
+        -:   51:  (__extension__ (((union { __typeof(status) __in; int __i; }) \
+        -:   52:		   { .__in = (status) }).__i))
+        -:   53:#  else
+        -:   54:#   define __WAIT_INT(status)	(*(int *) &(status))
+        -:   55:#  endif
+        -:   56:
+        -:   57:/* This is the type of the argument to `wait'.  The funky union
+        -:   58:   causes redeclarations with either `int *' or `union wait *' to be
+        -:   59:   allowed without complaint.  __WAIT_STATUS_DEFN is the type used in
+        -:   60:   the actual function definitions.  */
+        -:   61:
+        -:   62:#  if !defined __GNUC__ || __GNUC__ < 2 || defined __cplusplus
+        -:   63:#   define __WAIT_STATUS	void *
+        -:   64:#   define __WAIT_STATUS_DEFN	void *
+        -:   65:#  else
+        -:   66:/* This works in GCC 2.6.1 and later.  */
+        -:   67:typedef union
+        -:   68:  {
+        -:   69:    union wait *__uptr;
+        -:   70:    int *__iptr;
+        -:   71:  } __WAIT_STATUS __attribute__ ((__transparent_union__));
+        -:   72:#   define __WAIT_STATUS_DEFN	int *
+        -:   73:#  endif
+        -:   74:
+        -:   75:# else /* Don't use misc.  */
+        -:   76:
+        -:   77:#  define __WAIT_INT(status)	(status)
+        -:   78:#  define __WAIT_STATUS		int *
+        -:   79:#  define __WAIT_STATUS_DEFN	int *
+        -:   80:
+        -:   81:# endif /* Use misc.  */
+        -:   82:
+        -:   83:/* Define the macros <sys/wait.h> also would define this way.  */
+        -:   84:# define WEXITSTATUS(status)	__WEXITSTATUS (__WAIT_INT (status))
+        -:   85:# define WTERMSIG(status)	__WTERMSIG (__WAIT_INT (status))
+        -:   86:# define WSTOPSIG(status)	__WSTOPSIG (__WAIT_INT (status))
+        -:   87:# define WIFEXITED(status)	__WIFEXITED (__WAIT_INT (status))
+        -:   88:# define WIFSIGNALED(status)	__WIFSIGNALED (__WAIT_INT (status))
+        -:   89:# define WIFSTOPPED(status)	__WIFSTOPPED (__WAIT_INT (status))
+        -:   90:# ifdef __WIFCONTINUED
+        -:   91:#  define WIFCONTINUED(status)	__WIFCONTINUED (__WAIT_INT (status))
+        -:   92:# endif
+        -:   93:#endif	/* X/Open or XPG7 and <sys/wait.h> not included.  */
+        -:   94:
+        -:   95:__BEGIN_NAMESPACE_STD
+        -:   96:/* Returned by `div'.  */
+        -:   97:typedef struct
+        -:   98:  {
+        -:   99:    int quot;			/* Quotient.  */
+        -:  100:    int rem;			/* Remainder.  */
+        -:  101:  } div_t;
+        -:  102:
+        -:  103:/* Returned by `ldiv'.  */
+        -:  104:#ifndef __ldiv_t_defined
+        -:  105:typedef struct
+        -:  106:  {
+        -:  107:    long int quot;		/* Quotient.  */
+        -:  108:    long int rem;		/* Remainder.  */
+        -:  109:  } ldiv_t;
+        -:  110:# define __ldiv_t_defined	1
+        -:  111:#endif
+        -:  112:__END_NAMESPACE_STD
+        -:  113:
+        -:  114:#if defined __USE_ISOC99 && !defined __lldiv_t_defined
+        -:  115:__BEGIN_NAMESPACE_C99
+        -:  116:/* Returned by `lldiv'.  */
+        -:  117:__extension__ typedef struct
+        -:  118:  {
+        -:  119:    long long int quot;		/* Quotient.  */
+        -:  120:    long long int rem;		/* Remainder.  */
+        -:  121:  } lldiv_t;
+        -:  122:# define __lldiv_t_defined	1
+        -:  123:__END_NAMESPACE_C99
+        -:  124:#endif
+        -:  125:
+        -:  126:
+        -:  127:/* The largest number rand will return (same as INT_MAX).  */
+        -:  128:#define	RAND_MAX	2147483647
+        -:  129:
+        -:  130:
+        -:  131:/* We define these the same for all machines.
+        -:  132:   Changes from this to the outside world should be done in `_exit'.  */
+        -:  133:#define	EXIT_FAILURE	1	/* Failing exit status.  */
+        -:  134:#define	EXIT_SUCCESS	0	/* Successful exit status.  */
+        -:  135:
+        -:  136:
+        -:  137:/* Maximum length of a multibyte character in the current locale.  */
+        -:  138:#define	MB_CUR_MAX	(__ctype_get_mb_cur_max ())
+        -:  139:extern size_t __ctype_get_mb_cur_max (void) __THROW __wur;
+        -:  140:
+        -:  141:
+        -:  142:__BEGIN_NAMESPACE_STD
+        -:  143:/* Convert a string to a floating-point number.  */
+        -:  144:extern double atof (const char *__nptr)
+        -:  145:     __THROW __attribute_pure__ __nonnull ((1)) __wur;
+        -:  146:/* Convert a string to an integer.  */
+        -:  147:extern int atoi (const char *__nptr)
+        -:  148:     __THROW __attribute_pure__ __nonnull ((1)) __wur;
+        -:  149:/* Convert a string to a long integer.  */
+        -:  150:extern long int atol (const char *__nptr)
+        -:  151:     __THROW __attribute_pure__ __nonnull ((1)) __wur;
+        -:  152:__END_NAMESPACE_STD
+        -:  153:
+        -:  154:#ifdef __USE_ISOC99
+        -:  155:__BEGIN_NAMESPACE_C99
+        -:  156:/* Convert a string to a long long integer.  */
+        -:  157:__extension__ extern long long int atoll (const char *__nptr)
+        -:  158:     __THROW __attribute_pure__ __nonnull ((1)) __wur;
+        -:  159:__END_NAMESPACE_C99
+        -:  160:#endif
+        -:  161:
+        -:  162:__BEGIN_NAMESPACE_STD
+        -:  163:/* Convert a string to a floating-point number.  */
+        -:  164:extern double strtod (const char *__restrict __nptr,
+        -:  165:		      char **__restrict __endptr)
+        -:  166:     __THROW __nonnull ((1));
+        -:  167:__END_NAMESPACE_STD
+        -:  168:
+        -:  169:#ifdef	__USE_ISOC99
+        -:  170:__BEGIN_NAMESPACE_C99
+        -:  171:/* Likewise for `float' and `long double' sizes of floating-point numbers.  */
+        -:  172:extern float strtof (const char *__restrict __nptr,
+        -:  173:		     char **__restrict __endptr) __THROW __nonnull ((1));
+        -:  174:
+        -:  175:extern long double strtold (const char *__restrict __nptr,
+        -:  176:			    char **__restrict __endptr)
+        -:  177:     __THROW __nonnull ((1));
+        -:  178:__END_NAMESPACE_C99
+        -:  179:#endif
+        -:  180:
+        -:  181:__BEGIN_NAMESPACE_STD
+        -:  182:/* Convert a string to a long integer.  */
+        -:  183:extern long int strtol (const char *__restrict __nptr,
+        -:  184:			char **__restrict __endptr, int __base)
+        -:  185:     __THROW __nonnull ((1));
+        -:  186:/* Convert a string to an unsigned long integer.  */
+        -:  187:extern unsigned long int strtoul (const char *__restrict __nptr,
+        -:  188:				  char **__restrict __endptr, int __base)
+        -:  189:     __THROW __nonnull ((1));
+        -:  190:__END_NAMESPACE_STD
+        -:  191:
+        -:  192:#ifdef __USE_MISC
+        -:  193:/* Convert a string to a quadword integer.  */
+        -:  194:__extension__
+        -:  195:extern long long int strtoq (const char *__restrict __nptr,
+        -:  196:			     char **__restrict __endptr, int __base)
+        -:  197:     __THROW __nonnull ((1));
+        -:  198:/* Convert a string to an unsigned quadword integer.  */
+        -:  199:__extension__
+        -:  200:extern unsigned long long int strtouq (const char *__restrict __nptr,
+        -:  201:				       char **__restrict __endptr, int __base)
+        -:  202:     __THROW __nonnull ((1));
+        -:  203:#endif /* Use misc.  */
+        -:  204:
+        -:  205:#ifdef __USE_ISOC99
+        -:  206:__BEGIN_NAMESPACE_C99
+        -:  207:/* Convert a string to a quadword integer.  */
+        -:  208:__extension__
+        -:  209:extern long long int strtoll (const char *__restrict __nptr,
+        -:  210:			      char **__restrict __endptr, int __base)
+        -:  211:     __THROW __nonnull ((1));
+        -:  212:/* Convert a string to an unsigned quadword integer.  */
+        -:  213:__extension__
+        -:  214:extern unsigned long long int strtoull (const char *__restrict __nptr,
+        -:  215:					char **__restrict __endptr, int __base)
+        -:  216:     __THROW __nonnull ((1));
+        -:  217:__END_NAMESPACE_C99
+        -:  218:#endif /* ISO C99 or use MISC.  */
+        -:  219:
+        -:  220:
+        -:  221:#ifdef __USE_GNU
+        -:  222:/* The concept of one static locale per category is not very well
+        -:  223:   thought out.  Many applications will need to process its data using
+        -:  224:   information from several different locales.  Another problem is
+        -:  225:   the implementation of the internationalization handling in the
+        -:  226:   ISO C++ standard library.  To support this another set of
+        -:  227:   the functions using locale data exist which take an additional
+        -:  228:   argument.
+        -:  229:
+        -:  230:   Attention: even though several *_l interfaces are part of POSIX:2008,
+        -:  231:   these are not.  */
+        -:  232:
+        -:  233:/* Structure for reentrant locale using functions.  This is an
+        -:  234:   (almost) opaque type for the user level programs.  */
+        -:  235:# include <xlocale.h>
+        -:  236:
+        -:  237:/* Special versions of the functions above which take the locale to
+        -:  238:   use as an additional parameter.  */
+        -:  239:extern long int strtol_l (const char *__restrict __nptr,
+        -:  240:			  char **__restrict __endptr, int __base,
+        -:  241:			  __locale_t __loc) __THROW __nonnull ((1, 4));
+        -:  242:
+        -:  243:extern unsigned long int strtoul_l (const char *__restrict __nptr,
+        -:  244:				    char **__restrict __endptr,
+        -:  245:				    int __base, __locale_t __loc)
+        -:  246:     __THROW __nonnull ((1, 4));
+        -:  247:
+        -:  248:__extension__
+        -:  249:extern long long int strtoll_l (const char *__restrict __nptr,
+        -:  250:				char **__restrict __endptr, int __base,
+        -:  251:				__locale_t __loc)
+        -:  252:     __THROW __nonnull ((1, 4));
+        -:  253:
+        -:  254:__extension__
+        -:  255:extern unsigned long long int strtoull_l (const char *__restrict __nptr,
+        -:  256:					  char **__restrict __endptr,
+        -:  257:					  int __base, __locale_t __loc)
+        -:  258:     __THROW __nonnull ((1, 4));
+        -:  259:
+        -:  260:extern double strtod_l (const char *__restrict __nptr,
+        -:  261:			char **__restrict __endptr, __locale_t __loc)
+        -:  262:     __THROW __nonnull ((1, 3));
+        -:  263:
+        -:  264:extern float strtof_l (const char *__restrict __nptr,
+        -:  265:		       char **__restrict __endptr, __locale_t __loc)
+        -:  266:     __THROW __nonnull ((1, 3));
+        -:  267:
+        -:  268:extern long double strtold_l (const char *__restrict __nptr,
+        -:  269:			      char **__restrict __endptr,
+        -:  270:			      __locale_t __loc)
+        -:  271:     __THROW __nonnull ((1, 3));
+        -:  272:#endif /* GNU */
+        -:  273:
+        -:  274:
+        -:  275:#ifdef __USE_EXTERN_INLINES
+        -:  276:__BEGIN_NAMESPACE_STD
+        -:  277:__extern_inline int
+        -:  278:__NTH (atoi (const char *__nptr))
+        -:  279:{
+    #####:  280:  return (int) strtol (__nptr, (char **) NULL, 10);
+        -:  281:}
+        -:  282:__extern_inline long int
+        -:  283:__NTH (atol (const char *__nptr))
+        -:  284:{
+        -:  285:  return strtol (__nptr, (char **) NULL, 10);
+        -:  286:}
+        -:  287:__END_NAMESPACE_STD
+        -:  288:
+        -:  289:# ifdef __USE_ISOC99
+        -:  290:__BEGIN_NAMESPACE_C99
+        -:  291:__extension__ __extern_inline long long int
+        -:  292:__NTH (atoll (const char *__nptr))
+        -:  293:{
+        -:  294:  return strtoll (__nptr, (char **) NULL, 10);
+        -:  295:}
+        -:  296:__END_NAMESPACE_C99
+        -:  297:# endif
+        -:  298:#endif /* Optimizing and Inlining.  */
+        -:  299:
+        -:  300:
+        -:  301:#if defined __USE_MISC || defined __USE_XOPEN_EXTENDED
+        -:  302:/* Convert N to base 64 using the digits "./0-9A-Za-z", least-significant
+        -:  303:   digit first.  Returns a pointer to static storage overwritten by the
+        -:  304:   next call.  */
+        -:  305:extern char *l64a (long int __n) __THROW __wur;
+        -:  306:
+        -:  307:/* Read a number from a string S in base 64 as above.  */
+        -:  308:extern long int a64l (const char *__s)
+        -:  309:     __THROW __attribute_pure__ __nonnull ((1)) __wur;
+        -:  310:
+        -:  311:#endif	/* Use misc || extended X/Open.  */
+        -:  312:
+        -:  313:#if defined __USE_MISC || defined __USE_XOPEN_EXTENDED
+        -:  314:# include <sys/types.h>	/* we need int32_t... */
+        -:  315:
+        -:  316:/* These are the functions that actually do things.  The `random', `srandom',
+        -:  317:   `initstate' and `setstate' functions are those from BSD Unices.
+        -:  318:   The `rand' and `srand' functions are required by the ANSI standard.
+        -:  319:   We provide both interfaces to the same random number generator.  */
+        -:  320:/* Return a random long integer between 0 and RAND_MAX inclusive.  */
+        -:  321:extern long int random (void) __THROW;
+        -:  322:
+        -:  323:/* Seed the random number generator with the given number.  */
+        -:  324:extern void srandom (unsigned int __seed) __THROW;
+        -:  325:
+        -:  326:/* Initialize the random number generator to use state buffer STATEBUF,
+        -:  327:   of length STATELEN, and seed it with SEED.  Optimal lengths are 8, 16,
+        -:  328:   32, 64, 128 and 256, the bigger the better; values less than 8 will
+        -:  329:   cause an error and values greater than 256 will be rounded down.  */
+        -:  330:extern char *initstate (unsigned int __seed, char *__statebuf,
+        -:  331:			size_t __statelen) __THROW __nonnull ((2));
+        -:  332:
+        -:  333:/* Switch the random number generator to state buffer STATEBUF,
+        -:  334:   which should have been previously initialized by `initstate'.  */
+        -:  335:extern char *setstate (char *__statebuf) __THROW __nonnull ((1));
+        -:  336:
+        -:  337:
+        -:  338:# ifdef __USE_MISC
+        -:  339:/* Reentrant versions of the `random' family of functions.
+        -:  340:   These functions all use the following data structure to contain
+        -:  341:   state, rather than global state variables.  */
+        -:  342:
+        -:  343:struct random_data
+        -:  344:  {
+        -:  345:    int32_t *fptr;		/* Front pointer.  */
+        -:  346:    int32_t *rptr;		/* Rear pointer.  */
+        -:  347:    int32_t *state;		/* Array of state values.  */
+        -:  348:    int rand_type;		/* Type of random number generator.  */
+        -:  349:    int rand_deg;		/* Degree of random number generator.  */
+        -:  350:    int rand_sep;		/* Distance between front and rear.  */
+        -:  351:    int32_t *end_ptr;		/* Pointer behind state table.  */
+        -:  352:  };
+        -:  353:
+        -:  354:extern int random_r (struct random_data *__restrict __buf,
+        -:  355:		     int32_t *__restrict __result) __THROW __nonnull ((1, 2));
+        -:  356:
+        -:  357:extern int srandom_r (unsigned int __seed, struct random_data *__buf)
+        -:  358:     __THROW __nonnull ((2));
+        -:  359:
+        -:  360:extern int initstate_r (unsigned int __seed, char *__restrict __statebuf,
+        -:  361:			size_t __statelen,
+        -:  362:			struct random_data *__restrict __buf)
+        -:  363:     __THROW __nonnull ((2, 4));
+        -:  364:
+        -:  365:extern int setstate_r (char *__restrict __statebuf,
+        -:  366:		       struct random_data *__restrict __buf)
+        -:  367:     __THROW __nonnull ((1, 2));
+        -:  368:# endif	/* Use misc.  */
+        -:  369:#endif	/* Use extended X/Open || misc. */
+        -:  370:
+        -:  371:
+        -:  372:__BEGIN_NAMESPACE_STD
+        -:  373:/* Return a random integer between 0 and RAND_MAX inclusive.  */
+        -:  374:extern int rand (void) __THROW;
+        -:  375:/* Seed the random number generator with the given number.  */
+        -:  376:extern void srand (unsigned int __seed) __THROW;
+        -:  377:__END_NAMESPACE_STD
+        -:  378:
+        -:  379:#ifdef __USE_POSIX
+        -:  380:/* Reentrant interface according to POSIX.1.  */
+        -:  381:extern int rand_r (unsigned int *__seed) __THROW;
+        -:  382:#endif
+        -:  383:
+        -:  384:
+        -:  385:#if defined __USE_MISC || defined __USE_XOPEN
+        -:  386:/* System V style 48-bit random number generator functions.  */
+        -:  387:
+        -:  388:/* Return non-negative, double-precision floating-point value in [0.0,1.0).  */
+        -:  389:extern double drand48 (void) __THROW;
+        -:  390:extern double erand48 (unsigned short int __xsubi[3]) __THROW __nonnull ((1));
+        -:  391:
+        -:  392:/* Return non-negative, long integer in [0,2^31).  */
+        -:  393:extern long int lrand48 (void) __THROW;
+        -:  394:extern long int nrand48 (unsigned short int __xsubi[3])
+        -:  395:     __THROW __nonnull ((1));
+        -:  396:
+        -:  397:/* Return signed, long integers in [-2^31,2^31).  */
+        -:  398:extern long int mrand48 (void) __THROW;
+        -:  399:extern long int jrand48 (unsigned short int __xsubi[3])
+        -:  400:     __THROW __nonnull ((1));
+        -:  401:
+        -:  402:/* Seed random number generator.  */
+        -:  403:extern void srand48 (long int __seedval) __THROW;
+        -:  404:extern unsigned short int *seed48 (unsigned short int __seed16v[3])
+        -:  405:     __THROW __nonnull ((1));
+        -:  406:extern void lcong48 (unsigned short int __param[7]) __THROW __nonnull ((1));
+        -:  407:
+        -:  408:# ifdef __USE_MISC
+        -:  409:/* Data structure for communication with thread safe versions.  This
+        -:  410:   type is to be regarded as opaque.  It's only exported because users
+        -:  411:   have to allocate objects of this type.  */
+        -:  412:struct drand48_data
+        -:  413:  {
+        -:  414:    unsigned short int __x[3];	/* Current state.  */
+        -:  415:    unsigned short int __old_x[3]; /* Old state.  */
+        -:  416:    unsigned short int __c;	/* Additive const. in congruential formula.  */
+        -:  417:    unsigned short int __init;	/* Flag for initializing.  */
+        -:  418:    __extension__ unsigned long long int __a;	/* Factor in congruential
+        -:  419:						   formula.  */
+        -:  420:  };
+        -:  421:
+        -:  422:/* Return non-negative, double-precision floating-point value in [0.0,1.0).  */
+        -:  423:extern int drand48_r (struct drand48_data *__restrict __buffer,
+        -:  424:		      double *__restrict __result) __THROW __nonnull ((1, 2));
+        -:  425:extern int erand48_r (unsigned short int __xsubi[3],
+        -:  426:		      struct drand48_data *__restrict __buffer,
+        -:  427:		      double *__restrict __result) __THROW __nonnull ((1, 2));
+        -:  428:
+        -:  429:/* Return non-negative, long integer in [0,2^31).  */
+        -:  430:extern int lrand48_r (struct drand48_data *__restrict __buffer,
+        -:  431:		      long int *__restrict __result)
+        -:  432:     __THROW __nonnull ((1, 2));
+        -:  433:extern int nrand48_r (unsigned short int __xsubi[3],
+        -:  434:		      struct drand48_data *__restrict __buffer,
+        -:  435:		      long int *__restrict __result)
+        -:  436:     __THROW __nonnull ((1, 2));
+        -:  437:
+        -:  438:/* Return signed, long integers in [-2^31,2^31).  */
+        -:  439:extern int mrand48_r (struct drand48_data *__restrict __buffer,
+        -:  440:		      long int *__restrict __result)
+        -:  441:     __THROW __nonnull ((1, 2));
+        -:  442:extern int jrand48_r (unsigned short int __xsubi[3],
+        -:  443:		      struct drand48_data *__restrict __buffer,
+        -:  444:		      long int *__restrict __result)
+        -:  445:     __THROW __nonnull ((1, 2));
+        -:  446:
+        -:  447:/* Seed random number generator.  */
+        -:  448:extern int srand48_r (long int __seedval, struct drand48_data *__buffer)
+        -:  449:     __THROW __nonnull ((2));
+        -:  450:
+        -:  451:extern int seed48_r (unsigned short int __seed16v[3],
+        -:  452:		     struct drand48_data *__buffer) __THROW __nonnull ((1, 2));
+        -:  453:
+        -:  454:extern int lcong48_r (unsigned short int __param[7],
+        -:  455:		      struct drand48_data *__buffer)
+        -:  456:     __THROW __nonnull ((1, 2));
+        -:  457:# endif	/* Use misc.  */
+        -:  458:#endif	/* Use misc or X/Open.  */
+        -:  459:
+        -:  460:#endif /* don't just need malloc and calloc */
+        -:  461:
+        -:  462:#ifndef __malloc_and_calloc_defined
+        -:  463:# define __malloc_and_calloc_defined
+        -:  464:__BEGIN_NAMESPACE_STD
+        -:  465:/* Allocate SIZE bytes of memory.  */
+        -:  466:extern void *malloc (size_t __size) __THROW __attribute_malloc__ __wur;
+        -:  467:/* Allocate NMEMB elements of SIZE bytes each, all initialized to 0.  */
+        -:  468:extern void *calloc (size_t __nmemb, size_t __size)
+        -:  469:     __THROW __attribute_malloc__ __wur;
+        -:  470:__END_NAMESPACE_STD
+        -:  471:#endif
+        -:  472:
+        -:  473:#ifndef __need_malloc_and_calloc
+        -:  474:__BEGIN_NAMESPACE_STD
+        -:  475:/* Re-allocate the previously allocated block
+        -:  476:   in PTR, making the new block SIZE bytes long.  */
+        -:  477:/* __attribute_malloc__ is not used, because if realloc returns
+        -:  478:   the same pointer that was passed to it, aliasing needs to be allowed
+        -:  479:   between objects pointed by the old and new pointers.  */
+        -:  480:extern void *realloc (void *__ptr, size_t __size)
+        -:  481:     __THROW __attribute_warn_unused_result__;
+        -:  482:/* Free a block allocated by `malloc', `realloc' or `calloc'.  */
+        -:  483:extern void free (void *__ptr) __THROW;
+        -:  484:__END_NAMESPACE_STD
+        -:  485:
+        -:  486:#ifdef	__USE_MISC
+        -:  487:/* Free a block.  An alias for `free'.	(Sun Unices).  */
+        -:  488:extern void cfree (void *__ptr) __THROW;
+        -:  489:#endif /* Use misc.  */
+        -:  490:
+        -:  491:#ifdef __USE_MISC
+        -:  492:# include <alloca.h>
+        -:  493:#endif /* Use misc.  */
+        -:  494:
+        -:  495:#if (defined __USE_XOPEN_EXTENDED && !defined __USE_XOPEN2K) \
+        -:  496:    || defined __USE_MISC
+        -:  497:/* Allocate SIZE bytes on a page boundary.  The storage cannot be freed.  */
+        -:  498:extern void *valloc (size_t __size) __THROW __attribute_malloc__ __wur;
+        -:  499:#endif
+        -:  500:
+        -:  501:#ifdef __USE_XOPEN2K
+        -:  502:/* Allocate memory of SIZE bytes with an alignment of ALIGNMENT.  */
+        -:  503:extern int posix_memalign (void **__memptr, size_t __alignment, size_t __size)
+        -:  504:     __THROW __nonnull ((1)) __wur;
+        -:  505:#endif
+        -:  506:
+        -:  507:#ifdef __USE_ISOC11
+        -:  508:/* ISO C variant of aligned allocation.  */
+        -:  509:extern void *aligned_alloc (size_t __alignment, size_t __size)
+        -:  510:     __THROW __attribute_malloc__ __attribute_alloc_size__ ((2)) __wur;
+        -:  511:#endif
+        -:  512:
+        -:  513:__BEGIN_NAMESPACE_STD
+        -:  514:/* Abort execution and generate a core-dump.  */
+        -:  515:extern void abort (void) __THROW __attribute__ ((__noreturn__));
+        -:  516:
+        -:  517:
+        -:  518:/* Register a function to be called when `exit' is called.  */
+        -:  519:extern int atexit (void (*__func) (void)) __THROW __nonnull ((1));
+        -:  520:
+        -:  521:#if defined __USE_ISOC11 || defined __USE_ISOCXX11
+        -:  522:/* Register a function to be called when `quick_exit' is called.  */
+        -:  523:# ifdef __cplusplus
+        -:  524:extern "C++" int at_quick_exit (void (*__func) (void))
+        -:  525:     __THROW __asm ("at_quick_exit") __nonnull ((1));
+        -:  526:# else
+        -:  527:extern int at_quick_exit (void (*__func) (void)) __THROW __nonnull ((1));
+        -:  528:# endif
+        -:  529:#endif
+        -:  530:__END_NAMESPACE_STD
+        -:  531:
+        -:  532:#ifdef	__USE_MISC
+        -:  533:/* Register a function to be called with the status
+        -:  534:   given to `exit' and the given argument.  */
+        -:  535:extern int on_exit (void (*__func) (int __status, void *__arg), void *__arg)
+        -:  536:     __THROW __nonnull ((1));
+        -:  537:#endif
+        -:  538:
+        -:  539:__BEGIN_NAMESPACE_STD
+        -:  540:/* Call all functions registered with `atexit' and `on_exit',
+        -:  541:   in the reverse of the order in which they were registered,
+        -:  542:   perform stdio cleanup, and terminate program execution with STATUS.  */
+        -:  543:extern void exit (int __status) __THROW __attribute__ ((__noreturn__));
+        -:  544:
+        -:  545:#if defined __USE_ISOC11 || defined __USE_ISOCXX11
+        -:  546:/* Call all functions registered with `at_quick_exit' in the reverse
+        -:  547:   of the order in which they were registered and terminate program
+        -:  548:   execution with STATUS.  */
+        -:  549:extern void quick_exit (int __status) __THROW __attribute__ ((__noreturn__));
+        -:  550:#endif
+        -:  551:__END_NAMESPACE_STD
+        -:  552:
+        -:  553:#ifdef __USE_ISOC99
+        -:  554:__BEGIN_NAMESPACE_C99
+        -:  555:/* Terminate the program with STATUS without calling any of the
+        -:  556:   functions registered with `atexit' or `on_exit'.  */
+        -:  557:extern void _Exit (int __status) __THROW __attribute__ ((__noreturn__));
+        -:  558:__END_NAMESPACE_C99
+        -:  559:#endif
+        -:  560:
+        -:  561:
+        -:  562:__BEGIN_NAMESPACE_STD
+        -:  563:/* Return the value of envariable NAME, or NULL if it doesn't exist.  */
+        -:  564:extern char *getenv (const char *__name) __THROW __nonnull ((1)) __wur;
+        -:  565:__END_NAMESPACE_STD
+        -:  566:
+        -:  567:#ifdef __USE_GNU
+        -:  568:/* This function is similar to the above but returns NULL if the
+        -:  569:   programs is running with SUID or SGID enabled.  */
+        -:  570:extern char *secure_getenv (const char *__name)
+        -:  571:     __THROW __nonnull ((1)) __wur;
+        -:  572:#endif
+        -:  573:
+        -:  574:#if defined __USE_MISC || defined __USE_XOPEN
+        -:  575:/* The SVID says this is in <stdio.h>, but this seems a better place.	*/
+        -:  576:/* Put STRING, which is of the form "NAME=VALUE", in the environment.
+        -:  577:   If there is no `=', remove NAME from the environment.  */
+        -:  578:extern int putenv (char *__string) __THROW __nonnull ((1));
+        -:  579:#endif
+        -:  580:
+        -:  581:#ifdef __USE_XOPEN2K
+        -:  582:/* Set NAME to VALUE in the environment.
+        -:  583:   If REPLACE is nonzero, overwrite an existing value.  */
+        -:  584:extern int setenv (const char *__name, const char *__value, int __replace)
+        -:  585:     __THROW __nonnull ((2));
+        -:  586:
+        -:  587:/* Remove the variable NAME from the environment.  */
+        -:  588:extern int unsetenv (const char *__name) __THROW __nonnull ((1));
+        -:  589:#endif
+        -:  590:
+        -:  591:#ifdef	__USE_MISC
+        -:  592:/* The `clearenv' was planned to be added to POSIX.1 but probably
+        -:  593:   never made it.  Nevertheless the POSIX.9 standard (POSIX bindings
+        -:  594:   for Fortran 77) requires this function.  */
+        -:  595:extern int clearenv (void) __THROW;
+        -:  596:#endif
+        -:  597:
+        -:  598:
+        -:  599:#if defined __USE_MISC \
+        -:  600:    || (defined __USE_XOPEN_EXTENDED && !defined __USE_XOPEN2K8)
+        -:  601:/* Generate a unique temporary file name from TEMPLATE.
+        -:  602:   The last six characters of TEMPLATE must be "XXXXXX";
+        -:  603:   they are replaced with a string that makes the file name unique.
+        -:  604:   Always returns TEMPLATE, it's either a temporary file name or a null
+        -:  605:   string if it cannot get a unique file name.  */
+        -:  606:extern char *mktemp (char *__template) __THROW __nonnull ((1));
+        -:  607:#endif
+        -:  608:
+        -:  609:#if defined __USE_XOPEN_EXTENDED || defined __USE_XOPEN2K8
+        -:  610:/* Generate a unique temporary file name from TEMPLATE.
+        -:  611:   The last six characters of TEMPLATE must be "XXXXXX";
+        -:  612:   they are replaced with a string that makes the filename unique.
+        -:  613:   Returns a file descriptor open on the file for reading and writing,
+        -:  614:   or -1 if it cannot create a uniquely-named file.
+        -:  615:
+        -:  616:   This function is a possible cancellation point and therefore not
+        -:  617:   marked with __THROW.  */
+        -:  618:# ifndef __USE_FILE_OFFSET64
+        -:  619:extern int mkstemp (char *__template) __nonnull ((1)) __wur;
+        -:  620:# else
+        -:  621:#  ifdef __REDIRECT
+        -:  622:extern int __REDIRECT (mkstemp, (char *__template), mkstemp64)
+        -:  623:     __nonnull ((1)) __wur;
+        -:  624:#  else
+        -:  625:#   define mkstemp mkstemp64
+        -:  626:#  endif
+        -:  627:# endif
+        -:  628:# ifdef __USE_LARGEFILE64
+        -:  629:extern int mkstemp64 (char *__template) __nonnull ((1)) __wur;
+        -:  630:# endif
+        -:  631:#endif
+        -:  632:
+        -:  633:#ifdef __USE_MISC
+        -:  634:/* Similar to mkstemp, but the template can have a suffix after the
+        -:  635:   XXXXXX.  The length of the suffix is specified in the second
+        -:  636:   parameter.
+        -:  637:
+        -:  638:   This function is a possible cancellation point and therefore not
+        -:  639:   marked with __THROW.  */
+        -:  640:# ifndef __USE_FILE_OFFSET64
+        -:  641:extern int mkstemps (char *__template, int __suffixlen) __nonnull ((1)) __wur;
+        -:  642:# else
+        -:  643:#  ifdef __REDIRECT
+        -:  644:extern int __REDIRECT (mkstemps, (char *__template, int __suffixlen),
+        -:  645:		       mkstemps64) __nonnull ((1)) __wur;
+        -:  646:#  else
+        -:  647:#   define mkstemps mkstemps64
+        -:  648:#  endif
+        -:  649:# endif
+        -:  650:# ifdef __USE_LARGEFILE64
+        -:  651:extern int mkstemps64 (char *__template, int __suffixlen)
+        -:  652:     __nonnull ((1)) __wur;
+        -:  653:# endif
+        -:  654:#endif
+        -:  655:
+        -:  656:#ifdef __USE_XOPEN2K8
+        -:  657:/* Create a unique temporary directory from TEMPLATE.
+        -:  658:   The last six characters of TEMPLATE must be "XXXXXX";
+        -:  659:   they are replaced with a string that makes the directory name unique.
+        -:  660:   Returns TEMPLATE, or a null pointer if it cannot get a unique name.
+        -:  661:   The directory is created mode 700.  */
+        -:  662:extern char *mkdtemp (char *__template) __THROW __nonnull ((1)) __wur;
+        -:  663:#endif
+        -:  664:
+        -:  665:#ifdef __USE_GNU
+        -:  666:/* Generate a unique temporary file name from TEMPLATE similar to
+        -:  667:   mkstemp.  But allow the caller to pass additional flags which are
+        -:  668:   used in the open call to create the file..
+        -:  669:
+        -:  670:   This function is a possible cancellation point and therefore not
+        -:  671:   marked with __THROW.  */
+        -:  672:# ifndef __USE_FILE_OFFSET64
+        -:  673:extern int mkostemp (char *__template, int __flags) __nonnull ((1)) __wur;
+        -:  674:# else
+        -:  675:#  ifdef __REDIRECT
+        -:  676:extern int __REDIRECT (mkostemp, (char *__template, int __flags), mkostemp64)
+        -:  677:     __nonnull ((1)) __wur;
+        -:  678:#  else
+        -:  679:#   define mkostemp mkostemp64
+        -:  680:#  endif
+        -:  681:# endif
+        -:  682:# ifdef __USE_LARGEFILE64
+        -:  683:extern int mkostemp64 (char *__template, int __flags) __nonnull ((1)) __wur;
+        -:  684:# endif
+        -:  685:
+        -:  686:/* Similar to mkostemp, but the template can have a suffix after the
+        -:  687:   XXXXXX.  The length of the suffix is specified in the second
+        -:  688:   parameter.
+        -:  689:
+        -:  690:   This function is a possible cancellation point and therefore not
+        -:  691:   marked with __THROW.  */
+        -:  692:# ifndef __USE_FILE_OFFSET64
+        -:  693:extern int mkostemps (char *__template, int __suffixlen, int __flags)
+        -:  694:     __nonnull ((1)) __wur;
+        -:  695:# else
+        -:  696:#  ifdef __REDIRECT
+        -:  697:extern int __REDIRECT (mkostemps, (char *__template, int __suffixlen,
+        -:  698:				   int __flags), mkostemps64)
+        -:  699:     __nonnull ((1)) __wur;
+        -:  700:#  else
+        -:  701:#   define mkostemps mkostemps64
+        -:  702:#  endif
+        -:  703:# endif
+        -:  704:# ifdef __USE_LARGEFILE64
+        -:  705:extern int mkostemps64 (char *__template, int __suffixlen, int __flags)
+        -:  706:     __nonnull ((1)) __wur;
+        -:  707:# endif
+        -:  708:#endif
+        -:  709:
+        -:  710:
+        -:  711:__BEGIN_NAMESPACE_STD
+        -:  712:/* Execute the given line as a shell command.
+        -:  713:
+        -:  714:   This function is a cancellation point and therefore not marked with
+        -:  715:   __THROW.  */
+        -:  716:extern int system (const char *__command) __wur;
+        -:  717:__END_NAMESPACE_STD
+        -:  718:
+        -:  719:
+        -:  720:#ifdef	__USE_GNU
+        -:  721:/* Return a malloc'd string containing the canonical absolute name of the
+        -:  722:   existing named file.  */
+        -:  723:extern char *canonicalize_file_name (const char *__name)
+        -:  724:     __THROW __nonnull ((1)) __wur;
+        -:  725:#endif
+        -:  726:
+        -:  727:#if defined __USE_MISC || defined __USE_XOPEN_EXTENDED
+        -:  728:/* Return the canonical absolute name of file NAME.  If RESOLVED is
+        -:  729:   null, the result is malloc'd; otherwise, if the canonical name is
+        -:  730:   PATH_MAX chars or more, returns null with `errno' set to
+        -:  731:   ENAMETOOLONG; if the name fits in fewer than PATH_MAX chars,
+        -:  732:   returns the name in RESOLVED.  */
+        -:  733:extern char *realpath (const char *__restrict __name,
+        -:  734:		       char *__restrict __resolved) __THROW __wur;
+        -:  735:#endif
+        -:  736:
+        -:  737:
+        -:  738:/* Shorthand for type of comparison functions.  */
+        -:  739:#ifndef __COMPAR_FN_T
+        -:  740:# define __COMPAR_FN_T
+        -:  741:typedef int (*__compar_fn_t) (const void *, const void *);
+        -:  742:
+        -:  743:# ifdef	__USE_GNU
+        -:  744:typedef __compar_fn_t comparison_fn_t;
+        -:  745:# endif
+        -:  746:#endif
+        -:  747:#ifdef __USE_GNU
+        -:  748:typedef int (*__compar_d_fn_t) (const void *, const void *, void *);
+        -:  749:#endif
+        -:  750:
+        -:  751:__BEGIN_NAMESPACE_STD
+        -:  752:/* Do a binary search for KEY in BASE, which consists of NMEMB elements
+        -:  753:   of SIZE bytes each, using COMPAR to perform the comparisons.  */
+        -:  754:extern void *bsearch (const void *__key, const void *__base,
+        -:  755:		      size_t __nmemb, size_t __size, __compar_fn_t __compar)
+        -:  756:     __nonnull ((1, 2, 5)) __wur;
+        -:  757:
+        -:  758:#ifdef __USE_EXTERN_INLINES
+        -:  759:# include <bits/stdlib-bsearch.h>
+        -:  760:#endif
+        -:  761:
+        -:  762:/* Sort NMEMB elements of BASE, of SIZE bytes each,
+        -:  763:   using COMPAR to perform the comparisons.  */
+        -:  764:extern void qsort (void *__base, size_t __nmemb, size_t __size,
+        -:  765:		   __compar_fn_t __compar) __nonnull ((1, 4));
+        -:  766:#ifdef __USE_GNU
+        -:  767:extern void qsort_r (void *__base, size_t __nmemb, size_t __size,
+        -:  768:		     __compar_d_fn_t __compar, void *__arg)
+        -:  769:  __nonnull ((1, 4));
+        -:  770:#endif
+        -:  771:
+        -:  772:
+        -:  773:/* Return the absolute value of X.  */
+        -:  774:extern int abs (int __x) __THROW __attribute__ ((__const__)) __wur;
+        -:  775:extern long int labs (long int __x) __THROW __attribute__ ((__const__)) __wur;
+        -:  776:__END_NAMESPACE_STD
+        -:  777:
+        -:  778:#ifdef __USE_ISOC99
+        -:  779:__extension__ extern long long int llabs (long long int __x)
+        -:  780:     __THROW __attribute__ ((__const__)) __wur;
+        -:  781:#endif
+        -:  782:
+        -:  783:
+        -:  784:__BEGIN_NAMESPACE_STD
+        -:  785:/* Return the `div_t', `ldiv_t' or `lldiv_t' representation
+        -:  786:   of the value of NUMER over DENOM. */
+        -:  787:/* GCC may have built-ins for these someday.  */
+        -:  788:extern div_t div (int __numer, int __denom)
+        -:  789:     __THROW __attribute__ ((__const__)) __wur;
+        -:  790:extern ldiv_t ldiv (long int __numer, long int __denom)
+        -:  791:     __THROW __attribute__ ((__const__)) __wur;
+        -:  792:__END_NAMESPACE_STD
+        -:  793:
+        -:  794:#ifdef __USE_ISOC99
+        -:  795:__BEGIN_NAMESPACE_C99
+        -:  796:__extension__ extern lldiv_t lldiv (long long int __numer,
+        -:  797:				    long long int __denom)
+        -:  798:     __THROW __attribute__ ((__const__)) __wur;
+        -:  799:__END_NAMESPACE_C99
+        -:  800:#endif
+        -:  801:
+        -:  802:
+        -:  803:#if (defined __USE_XOPEN_EXTENDED && !defined __USE_XOPEN2K8) \
+        -:  804:    || defined __USE_MISC
+        -:  805:/* Convert floating point numbers to strings.  The returned values are
+        -:  806:   valid only until another call to the same function.  */
+        -:  807:
+        -:  808:/* Convert VALUE to a string with NDIGIT digits and return a pointer to
+        -:  809:   this.  Set *DECPT with the position of the decimal character and *SIGN
+        -:  810:   with the sign of the number.  */
+        -:  811:extern char *ecvt (double __value, int __ndigit, int *__restrict __decpt,
+        -:  812:		   int *__restrict __sign) __THROW __nonnull ((3, 4)) __wur;
+        -:  813:
+        -:  814:/* Convert VALUE to a string rounded to NDIGIT decimal digits.  Set *DECPT
+        -:  815:   with the position of the decimal character and *SIGN with the sign of
+        -:  816:   the number.  */
+        -:  817:extern char *fcvt (double __value, int __ndigit, int *__restrict __decpt,
+        -:  818:		   int *__restrict __sign) __THROW __nonnull ((3, 4)) __wur;
+        -:  819:
+        -:  820:/* If possible convert VALUE to a string with NDIGIT significant digits.
+        -:  821:   Otherwise use exponential representation.  The resulting string will
+        -:  822:   be written to BUF.  */
+        -:  823:extern char *gcvt (double __value, int __ndigit, char *__buf)
+        -:  824:     __THROW __nonnull ((3)) __wur;
+        -:  825:#endif
+        -:  826:
+        -:  827:#ifdef __USE_MISC
+        -:  828:/* Long double versions of above functions.  */
+        -:  829:extern char *qecvt (long double __value, int __ndigit,
+        -:  830:		    int *__restrict __decpt, int *__restrict __sign)
+        -:  831:     __THROW __nonnull ((3, 4)) __wur;
+        -:  832:extern char *qfcvt (long double __value, int __ndigit,
+        -:  833:		    int *__restrict __decpt, int *__restrict __sign)
+        -:  834:     __THROW __nonnull ((3, 4)) __wur;
+        -:  835:extern char *qgcvt (long double __value, int __ndigit, char *__buf)
+        -:  836:     __THROW __nonnull ((3)) __wur;
+        -:  837:
+        -:  838:
+        -:  839:/* Reentrant version of the functions above which provide their own
+        -:  840:   buffers.  */
+        -:  841:extern int ecvt_r (double __value, int __ndigit, int *__restrict __decpt,
+        -:  842:		   int *__restrict __sign, char *__restrict __buf,
+        -:  843:		   size_t __len) __THROW __nonnull ((3, 4, 5));
+        -:  844:extern int fcvt_r (double __value, int __ndigit, int *__restrict __decpt,
+        -:  845:		   int *__restrict __sign, char *__restrict __buf,
+        -:  846:		   size_t __len) __THROW __nonnull ((3, 4, 5));
+        -:  847:
+        -:  848:extern int qecvt_r (long double __value, int __ndigit,
+        -:  849:		    int *__restrict __decpt, int *__restrict __sign,
+        -:  850:		    char *__restrict __buf, size_t __len)
+        -:  851:     __THROW __nonnull ((3, 4, 5));
+        -:  852:extern int qfcvt_r (long double __value, int __ndigit,
+        -:  853:		    int *__restrict __decpt, int *__restrict __sign,
+        -:  854:		    char *__restrict __buf, size_t __len)
+        -:  855:     __THROW __nonnull ((3, 4, 5));
+        -:  856:#endif	/* misc */
+        -:  857:
+        -:  858:
+        -:  859:__BEGIN_NAMESPACE_STD
+        -:  860:/* Return the length of the multibyte character
+        -:  861:   in S, which is no longer than N.  */
+        -:  862:extern int mblen (const char *__s, size_t __n) __THROW;
+        -:  863:/* Return the length of the given multibyte character,
+        -:  864:   putting its `wchar_t' representation in *PWC.  */
+        -:  865:extern int mbtowc (wchar_t *__restrict __pwc,
+        -:  866:		   const char *__restrict __s, size_t __n) __THROW;
+        -:  867:/* Put the multibyte character represented
+        -:  868:   by WCHAR in S, returning its length.  */
+        -:  869:extern int wctomb (char *__s, wchar_t __wchar) __THROW;
+        -:  870:
+        -:  871:
+        -:  872:/* Convert a multibyte string to a wide char string.  */
+        -:  873:extern size_t mbstowcs (wchar_t *__restrict  __pwcs,
+        -:  874:			const char *__restrict __s, size_t __n) __THROW;
+        -:  875:/* Convert a wide char string to multibyte string.  */
+        -:  876:extern size_t wcstombs (char *__restrict __s,
+        -:  877:			const wchar_t *__restrict __pwcs, size_t __n)
+        -:  878:     __THROW;
+        -:  879:__END_NAMESPACE_STD
+        -:  880:
+        -:  881:
+        -:  882:#ifdef __USE_MISC
+        -:  883:/* Determine whether the string value of RESPONSE matches the affirmation
+        -:  884:   or negative response expression as specified by the LC_MESSAGES category
+        -:  885:   in the program's current locale.  Returns 1 if affirmative, 0 if
+        -:  886:   negative, and -1 if not matching.  */
+        -:  887:extern int rpmatch (const char *__response) __THROW __nonnull ((1)) __wur;
+        -:  888:#endif
+        -:  889:
+        -:  890:
+        -:  891:#if defined __USE_XOPEN_EXTENDED || defined __USE_XOPEN2K8
+        -:  892:/* Parse comma separated suboption from *OPTIONP and match against
+        -:  893:   strings in TOKENS.  If found return index and set *VALUEP to
+        -:  894:   optional value introduced by an equal sign.  If the suboption is
+        -:  895:   not part of TOKENS return in *VALUEP beginning of unknown
+        -:  896:   suboption.  On exit *OPTIONP is set to the beginning of the next
+        -:  897:   token or at the terminating NUL character.  */
+        -:  898:extern int getsubopt (char **__restrict __optionp,
+        -:  899:		      char *const *__restrict __tokens,
+        -:  900:		      char **__restrict __valuep)
+        -:  901:     __THROW __nonnull ((1, 2, 3)) __wur;
+        -:  902:#endif
+        -:  903:
+        -:  904:
+        -:  905:#ifdef __USE_XOPEN
+        -:  906:/* Setup DES tables according KEY.  */
+        -:  907:extern void setkey (const char *__key) __THROW __nonnull ((1));
+        -:  908:#endif
+        -:  909:
+        -:  910:
+        -:  911:/* X/Open pseudo terminal handling.  */
+        -:  912:
+        -:  913:#ifdef __USE_XOPEN2KXSI
+        -:  914:/* Return a master pseudo-terminal handle.  */
+        -:  915:extern int posix_openpt (int __oflag) __wur;
+        -:  916:#endif
+        -:  917:
+        -:  918:#ifdef __USE_XOPEN
+        -:  919:/* The next four functions all take a master pseudo-tty fd and
+        -:  920:   perform an operation on the associated slave:  */
+        -:  921:
+        -:  922:/* Chown the slave to the calling user.  */
+        -:  923:extern int grantpt (int __fd) __THROW;
+        -:  924:
+        -:  925:/* Release an internal lock so the slave can be opened.
+        -:  926:   Call after grantpt().  */
+        -:  927:extern int unlockpt (int __fd) __THROW;
+        -:  928:
+        -:  929:/* Return the pathname of the pseudo terminal slave associated with
+        -:  930:   the master FD is open on, or NULL on errors.
+        -:  931:   The returned storage is good until the next call to this function.  */
+        -:  932:extern char *ptsname (int __fd) __THROW __wur;
+        -:  933:#endif
+        -:  934:
+        -:  935:#ifdef __USE_GNU
+        -:  936:/* Store at most BUFLEN characters of the pathname of the slave pseudo
+        -:  937:   terminal associated with the master FD is open on in BUF.
+        -:  938:   Return 0 on success, otherwise an error number.  */
+        -:  939:extern int ptsname_r (int __fd, char *__buf, size_t __buflen)
+        -:  940:     __THROW __nonnull ((2));
+        -:  941:
+        -:  942:/* Open a master pseudo terminal and return its file descriptor.  */
+        -:  943:extern int getpt (void);
+        -:  944:#endif
+        -:  945:
+        -:  946:#ifdef __USE_MISC
+        -:  947:/* Put the 1 minute, 5 minute and 15 minute load averages into the first
+        -:  948:   NELEM elements of LOADAVG.  Return the number written (never more than
+        -:  949:   three, but may be less than NELEM), or -1 if an error occurred.  */
+        -:  950:extern int getloadavg (double __loadavg[], int __nelem)
+        -:  951:     __THROW __nonnull ((1));
+        -:  952:#endif
+        -:  953:
+        -:  954:#include <bits/stdlib-float.h>
+        -:  955:
+        -:  956:/* Define some macros helping to catch buffer overflows.  */
+        -:  957:#if __USE_FORTIFY_LEVEL > 0 && defined __fortify_function
+        -:  958:# include <bits/stdlib.h>
+        -:  959:#endif
+        -:  960:#ifdef __LDBL_COMPAT
+        -:  961:# include <bits/stdlib-ldbl.h>
+        -:  962:#endif
+        -:  963:
+        -:  964:#endif /* don't just need malloc and calloc */
+        -:  965:#undef __need_malloc_and_calloc
+        -:  966:
+        -:  967:__END_DECLS
+        -:  968:
+        -:  969:#endif /* stdlib.h  */

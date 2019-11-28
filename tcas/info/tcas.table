@@ -1,0 +1,9 @@
+1: initialize
+2: ALIM
+3: Inhibit_Biased_Climb
+4: Non_Crossing_Biased_Climb
+5: Non_Crossing_Biased_Descend
+6: Own_Below_Threat
+7: Own_Above_Threat
+8: alt_sep_test
+9: main

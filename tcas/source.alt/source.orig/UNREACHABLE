@@ -1,0 +1,5 @@
+
+Two edges in alt_sep_test are unreachable,
+as they require two mutually contradictory
+expressions to be true.  See comment in code.
+All other edges are reachable.

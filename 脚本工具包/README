@@ -1,0 +1,6 @@
+1、把套件压缩包拉进linux虚拟机中，解压
+2、进入/source.alt/source.orig/文件夹中，打开终端terminal输入： gcc -O2 *.c -o *.exe (*代表函数名称,如tcas/replace -O2 -o 是字母o的大小写不是0) 检查语法报错情况，根据报错查百度寻找修改方法 如：如果报错对'log/xxx'未定义的引用则可试试在末尾添加 -lm 如该版本需修改很多地方如添加语句和替换则需要使用lua(学一下或者找我)
+3、生成exe成功后将成功语句加入makefile文件中(来自脚本代码),用于将其余版本make生成exe和gcno文件，可用cpmf.sh 和 mkf.sh（具体查看代码来关注脚本应放位置 如 先将修改好了的 makefile，mkf.sh ， mkf.sh 放入versions.alt/versions.orig/文件夹中，cpmf.sh用于将makefile复制入每个版本文件夹中v1-v23 mkf.sh 和 cpmf.sh 参数需做调整）
+4、在主文件夹中建立Wong、cross_tab、cross_tab_count、Sec、Sus、Flsf(mkdir 命令或者UI界面新建文件夹)文件夹，在cross_tab、cross_tab_count、newoutputs文件夹中拉入mkdir.sh(修改参数 该套件有几个测试版本就改成最大多少)在当前文件夹终端执行./mkdir.sh 即可生成v1-vn个文件夹 新修改方法：修改mkdir_result.sh参数执行即可完成此步骤
+5、将runvi.lua、cross_tab.py、Flsf.py、TMerge_Sec.py、TMerge_Sus.py、TMerge_Wong.py拖入套件scripts文件夹中， 修改脚本参数（套件名，测试用例数<-根据/scripts/runall.sh拖到最后一行即可查看用例数 和测试版本数<-根据versions数量）
+6、重新打包成可执行套件发给我在终端主文件夹外一层输入 tar -czvf *.tar.gz（目标压缩包名） *（套件名）
