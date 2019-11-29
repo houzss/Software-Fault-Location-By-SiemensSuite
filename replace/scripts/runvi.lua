@@ -2,7 +2,7 @@
 SUITE_NAME = "replace"
 CASE_NUM = 5542
 
-VERSION_NUM = 32 --total counted to 32 versions
+VERSION_NUM = 1 --total counted to 32 versions
 
 
 --variables--
