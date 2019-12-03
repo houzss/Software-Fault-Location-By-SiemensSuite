@@ -38,7 +38,7 @@ cpmf.sh 用于将makefile拷贝至各版本代码文件夹中，需要放在./ve
 mkf.sh 用于在各版本代码运行 make，需要放在./version.alt/version.orig中 
 diff.sh 用于比较版本错误行数 
 run_vi.lua 基于runall.sh对正确版本的代码运行（需将/source/替换为/source.alt/source.orig/才可以正确运行<-runv0.sh做到了），用于生成并执行各个版本的代码(runv0-runvi.sh 0代表正确版本,其余则为错误版本) 0-1频谱
-运行过程（基于上述过程已执行完毕）： 1、先执行cross_tab:基于gcov生成的覆盖信息构造每个测试用例的0-1谱 2、执行TMerge_*(Sus,Sec,Wong)，合成程序谱并计算每个语句的可疑度 次数频谱运行过程（flsf.py）： 执行单个python脚本即可完成构造次数频谱+可疑度文件 
+运行过程（基于上述过程已执行完毕）：0、每个版本的脚本需重新编译，即./versions.alt/versions.orig/环境下执行mkf.sh文件，将gcov重新编译 1、先执行cross_tab:基于gcov生成的覆盖信息构造每个测试用例的0-1谱 2、执行TMerge_*(Sus,Sec,Wong)，合成程序谱并计算每个语句的可疑度 次数频谱运行过程（flsf.py）： 执行单个python脚本即可完成构造次数频谱+可疑度文件 
 2019-11-19 houzss 
 
 文献参考 
