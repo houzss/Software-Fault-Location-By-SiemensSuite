@@ -46,10 +46,10 @@ for i =0, VERSION_NUM do
 			if string.find(tmp, "/source/") ~= nil then
 				tmp = string.gsub(tmp,"/source/","/versions.alt/versions.orig/v"..i.."/") -- modify paths
 				tmp = string.gsub(tmp,"/outputs/","/newoutputs/v"..i.."/")
-				tmp = tmp.."\n cd ../versions.alt/versions.orig/v"..i.."/ && gcov replace.c"
-				tmp = tmp.."\n mv replace.c.gcov ../../../traces/v"..i.."/cov_t"..k
+				tmp = tmp.."\n cd ../versions.alt/versions.orig/v"..i.."/ && gcov print_tokens2.c"
+				tmp = tmp.."\n mv print_tokens2.c.gcov ../../../traces/v"..i.."/cov_t"..k
 				k = k + 1
-				tmp = tmp.."\n rm replace.gcda && cd ../../../scripts/\n"
+				tmp = tmp.."\n rm print_tokens2.gcda && cd ../../../scripts/\n"
 			end
 			file:write(tmp.."\n")
 			tmp = ""
