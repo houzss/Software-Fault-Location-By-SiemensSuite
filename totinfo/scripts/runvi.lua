@@ -1,5 +1,5 @@
 #!/usr/local/bin/lua
-SUITE_NAME = "replace"
+SUITE_NAME = "tot_info"
 CASE_NUM = 1052
 
 VERSION_NUM = 23 --total counted to 23 versions
@@ -46,10 +46,10 @@ for i =0, VERSION_NUM do
 			if string.find(tmp, "/source/") ~= nil then
 				tmp = string.gsub(tmp,"/source/","/versions.alt/versions.orig/v"..i.."/") -- modify paths
 				tmp = string.gsub(tmp,"/outputs/","/newoutputs/v"..i.."/")
-				tmp = tmp.."\n cd ../versions.alt/versions.orig/v"..i.."/ && gcov replace.c"
-				tmp = tmp.."\n mv replace.c.gcov ../../../traces/v"..i.."/cov_t"..k
+				tmp = tmp.."\n cd ../versions.alt/versions.orig/v"..i.."/ && gcov tot_info.c"
+				tmp = tmp.."\n mv tot_info.c.gcov ../../../traces/v"..i.."/cov_t"..k
 				k = k + 1
-				tmp = tmp.."\n rm replace.gcda && cd ../../../scripts/\n"
+				tmp = tmp.."\n rm tot_info.gcda && cd ../../../scripts/\n"
 			end
 			file:write(tmp.."\n")
 			tmp = ""

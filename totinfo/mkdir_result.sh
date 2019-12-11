@@ -22,4 +22,8 @@ for i in `seq 1 $t`
 do
 	mkdir v${i}
 done
-
+cd ../traces
+for i in `seq 1 $t`
+do
+	mkdir v${i}
+done
