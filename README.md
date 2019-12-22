@@ -26,10 +26,12 @@ The replace SIR object is a member of the Siemens suite of test subjects. Origin
 这个套件有2710个测试用例和10个错误版本，错误位置有标注，但建议自行写脚本分析（diff.sh需要将所有版本汇总在一个文件夹并于当前文件夹执行）
 
 我增加的： 
+
 增加cross_tab文件夹用于存放0-1程序谱 
 增加cross_tab_count文件夹用于存放次数频谱 
 增加Flsf Wong Sus Sec 文件夹用于存放可疑度结果 
 基本分析执行代码脚本都在脚本工具包文件夹中 
+get11.py,getpsd.py,psd,psd_sec.py用于不同方法实验结果的评估（在脚本工具包下evaluation文件夹中）
 changeverror.lua用于修改代码编译错误处(tcas、totinfo不含)
 mkdir_result.sh一键生成所需文件夹（Wong cross_tab newoutputs等）及子文件夹(v1-vn)
 mkdir.sh用于一键生成v1-v32文件夹 
